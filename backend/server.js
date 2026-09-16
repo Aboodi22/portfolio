@@ -1,13 +1,18 @@
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 import 'dotenv/config';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Node < 22 doesn't have a native WebSocket, which the Supabase realtime
+// client needs even though we never use realtime features here.
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+  realtime: { transport: WebSocket }
+});
 
 // Health check — useful to confirm the backend is alive after deploying
 app.get('/', (req, res) => {
